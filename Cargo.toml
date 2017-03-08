@@ -1,6 +1,6 @@
 [package]
 
-name = "simulated_annealing"
+name = "genetic_algorithm"
 version = "0.0.1"
 authors = [ "Renan S. Silva" ]
 
