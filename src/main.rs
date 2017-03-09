@@ -19,6 +19,7 @@ struct Individual<T> {
     lb: T,
 }
 
+#[allow(dead_code)]
 impl<T> Population<T> {
     fn new (size: i32, n_gens:i32, lb:T, ub:T) -> Population<T> {
         Population::<T> {
@@ -31,6 +32,7 @@ impl<T> Population<T> {
     }
 }
 
+#[allow(dead_code)]
 impl Population<i32> {
     fn init(&mut self) {
         for _ in 0..self.size {
@@ -42,6 +44,7 @@ impl Population<i32> {
     }
 }
 
+#[allow(dead_code)]
 impl Population<bool> {
     fn init(&mut self) {
         for _ in 0..self.size {
@@ -53,6 +56,7 @@ impl Population<bool> {
     }
 }
 
+#[allow(dead_code)]
 impl Population<f64> {
     fn init(&mut self) {
         for _ in 0..self.size {
@@ -64,6 +68,7 @@ impl Population<f64> {
     }
 }
 
+#[allow(dead_code)]
 impl Individual<i32> {
     fn birth(&mut self) {
         let between = Range::new(self.lb, self.ub);
@@ -82,6 +87,7 @@ impl Individual<i32> {
     }
 }
 
+#[allow(dead_code)]
 impl Individual<f64> {
     fn birth(&mut self) {
         let between = Range::new(self.lb, self.ub);
@@ -100,6 +106,7 @@ impl Individual<f64> {
     }
 }
 
+#[allow(dead_code)]
 impl Individual<bool> {
     fn birth(&mut self) {
         let mut rng = rand::thread_rng();
@@ -117,6 +124,7 @@ impl Individual<bool> {
     }
 }
 
+#[allow(dead_code)]
 impl<T> Individual<T> {
     fn new(size:i32, lb:T, ub:T) -> Individual<T> {
         Individual::<T> {
@@ -131,8 +139,4 @@ impl<T> Individual<T> {
 fn main () {
     let mut pop:Population<f64> = Population::<f64>::new(10, 10, -5.12, 5.12);
     pop.init();
-
-    for x in &pop.individuals {
-        x.print();
-    }
 }
