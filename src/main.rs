@@ -29,11 +29,36 @@ impl<T> Population<T> {
             ub: ub,
         }
     }
+}
 
+impl Population<i32> {
     fn init(&mut self) {
         for _ in 0..self.size {
-            let w:Individual<T> = Individual::<T>::new(&self.n_gens, &mut self.lb, &mut self.ub);
-            //w.birth();
+            let mut w:Individual<i32> = Individual::<i32>::new(self.n_gens, self.lb, self.ub);
+            w.birth();
+            //w.print();
+            self.individuals.push(w);
+        }
+    }
+}
+
+impl Population<bool> {
+    fn init(&mut self) {
+        for _ in 0..self.size {
+            let mut w:Individual<bool> = Individual::<bool>::new(self.n_gens, self.lb, self.ub);
+            w.birth();
+            //w.print();
+            self.individuals.push(w);
+        }
+    }
+}
+
+impl Population<f64> {
+    fn init(&mut self) {
+        for _ in 0..self.size {
+            let mut w:Individual<f64> = Individual::<f64>::new(self.n_gens, self.lb, self.ub);
+            w.birth();
+            //w.print();
             self.individuals.push(w);
         }
     }
@@ -93,18 +118,21 @@ impl Individual<bool> {
 }
 
 impl<T> Individual<T> {
-    fn new(size:&i32, lb:&mut T, ub:&mut T) -> Individual<T> {
+    fn new(size:i32, lb:T, ub:T) -> Individual<T> {
         Individual::<T> {
-            size: *size,
+            size: size,
             gene: Vec::new(),
-            ub: *ub,
-            lb: *lb,
+            ub: ub,
+            lb: lb,
         }
     }
 }
 
 fn main () {
-    //let mut ind:Individual<bool> = Individual::new(10, false, true);
-    //ind.birth();
-    //ind.print();
+    let mut pop:Population<f64> = Population::<f64>::new(10, 10, -5.12, 5.12);
+    pop.init();
+
+    for x in &pop.individuals {
+        x.print();
+    }
 }
