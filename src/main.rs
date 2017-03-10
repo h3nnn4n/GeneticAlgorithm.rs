@@ -1,6 +1,12 @@
 extern crate rand;
 use rand::Rng;
 use rand::distributions::{IndependentSample, Range};
+use std::f64::consts::PI;
+
+#[allow(dead_code)]
+fn rastrigin(pos: &[f64]) -> f64 {
+    return pos.iter().fold(0.0, |sum, x| sum + x * x - 10.0 * (2.0 * PI * x).cos() + 10.0);
+}
 
 #[derive(Clone)]
 struct Population<T> {
@@ -9,6 +15,8 @@ struct Population<T> {
     n_gens: i32,
     ub: T,
     lb: T,
+    mutation_chance: f64,
+    crossover_chance: f64,
 }
 
 #[derive(Clone)]
@@ -17,6 +25,7 @@ struct Individual<T> {
     gene: Vec<T>,
     ub: T,
     lb: T,
+    mutation_chance: f64,
 }
 
 #[allow(dead_code)]
@@ -28,6 +37,15 @@ impl<T> Population<T> {
             n_gens: n_gens,
             lb: lb,
             ub: ub,
+            mutation_chance: 0.05,
+            crossover_chance: 0.8,
+        }
+    }
+
+    fn set_mutation_chance(&mut self, chance: f64){
+        self.mutation_chance = chance;
+        for &mut x in self.individuals {
+            x.set_mutation_chance(chance);
         }
     }
 }
@@ -104,6 +122,14 @@ impl Individual<f64> {
             println!("{0:4} {1}", i, self.gene[i]);
         }
     }
+
+    fn mutate(&mut self){
+        unimplemented!();
+    }
+
+    fn fitness(self) -> f64 {
+        return -rastrigin(self.gene.as_slice());
+    }
 }
 
 #[allow(dead_code)]
@@ -132,11 +158,24 @@ impl<T> Individual<T> {
             gene: Vec::new(),
             ub: ub,
             lb: lb,
+            mutation_chance: 0.05,
         }
+    }
+
+    fn set_mutation_chance(&mut self, chance: f64){
+        self.mutation_chance = chance;
     }
 }
 
 fn main () {
-    let mut pop:Population<f64> = Population::<f64>::new(10, 10, -5.12, 5.12);
+    let n_dim = 10;
+    let pop_size = 10;
+    let mut pop:Population<f64> = Population::<f64>::new(pop_size, n_dim, -5.12, 5.12);
     pop.init();
+    pop.set_mutation_chance(0.1);
+
+    for mut x in pop.individuals {
+        x.print();
+        println!();
+    }
 }
