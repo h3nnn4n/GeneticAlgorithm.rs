@@ -92,6 +92,54 @@ impl Population<f64> {
         }
     }
 
+    fn crossover_everyone(&mut self) -> Population<f64> {
+        let mut new_pop = Population::<f64>::new(self.size, self.n_gens, self.lb, self.ub);
+
+        new_pop.init();
+
+        let mut count = 0;
+        for x in &self.individuals {
+            new_pop.individuals[count].gene =  x.gene.clone();
+            count += 1;
+        }
+
+        println!("new pop initial size: {}", new_pop.individuals.len());
+
+        for _ in 0..(self.individuals.len()/2) as i32 {
+            if rand::thread_rng().gen::<f64>() < self.crossover_chance {
+                let mut a:i32 = 0;
+                let mut b:i32 = 0;
+
+                while {
+                    a = rand::thread_rng().gen_range::<i32>(0, self.individuals.len() as i32);
+                    b = rand::thread_rng().gen_range::<i32>(0, self.individuals.len() as i32);
+
+                    a != b
+                } {}
+
+                let split_pos = rand::thread_rng().gen_range(1, self.n_gens);
+
+                let (a_1, a_2) = self.individuals[a as usize].gene.split_at(split_pos as usize);
+                let (b_1, b_2) = self.individuals[b as usize].gene.split_at(split_pos as usize);
+
+                let mut new_a = self.individuals[a as usize].clone();
+                let mut new_b = self.individuals[a as usize].clone();
+
+                new_a.gene = a_1.to_vec();
+                new_b.gene = b_1.to_vec();
+
+                new_a.gene.extend_from_slice(b_2);
+                new_b.gene.extend_from_slice(a_2);
+
+                new_pop.individuals.push(new_a);
+                new_pop.individuals.push(new_b);
+            }
+        }
+
+        println!("new pop size: {}", new_pop.individuals.len());
+        return new_pop;
+    }
+
     fn print_pop_fit(&self){
         for ref x in &self.individuals {
             x.print_fitness();
@@ -235,8 +283,8 @@ impl<T> Individual<T> {
 }
 
 fn main () {
-    let n_dim = 2;
-    let pop_size = 10;
+    let n_dim = 6;
+    let pop_size = 20;
     let max_iter = 1000;
 
     let mut pop:Population<f64> = Population::<f64>::new(pop_size, n_dim, -5.12, 5.12);
@@ -247,10 +295,11 @@ fn main () {
     //pop.print_pop_fit();
 
     for _ in 0..max_iter{
-        let best = pop.get_best();
+        let best = pop.get_best(); // Save for elitmis
         pop.print_best_fit();
         pop.mutate_everyone();
+        pop.crossover_everyone();
 
-        pop.individuals[0] = best;
+        pop.individuals[0] = best; // Puts the best one back
     }
 }
