@@ -41,13 +41,6 @@ impl<T> Population<T> {
             crossover_chance: 0.8,
         }
     }
-
-    fn set_mutation_chance(&mut self, chance: f64){
-        self.mutation_chance = chance;
-        for &mut x in self.individuals {
-            x.set_mutation_chance(chance);
-        }
-    }
 }
 
 #[allow(dead_code)]
@@ -82,6 +75,13 @@ impl Population<f64> {
             w.birth();
             //w.print();
             self.individuals.push(w);
+        }
+    }
+
+    fn set_mutation_chance(&mut self, chance: f64){
+        self.mutation_chance = chance;
+        for ref mut x in &mut self.individuals {
+            x.set_mutation_chance(chance);
         }
     }
 }
@@ -174,7 +174,7 @@ fn main () {
     pop.init();
     pop.set_mutation_chance(0.1);
 
-    for mut x in pop.individuals {
+    for x in pop.individuals {
         x.print();
         println!();
     }
