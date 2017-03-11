@@ -2,6 +2,7 @@ extern crate rand;
 use rand::Rng;
 use rand::distributions::{IndependentSample, Range};
 use std::f64::consts::PI;
+// use std::cmp::min;
 
 #[allow(dead_code)]
 fn rastrigin(pos: &[f64]) -> f64 {
@@ -86,6 +87,56 @@ impl Population<f64> {
         }
     }
 
+    fn roulette(&mut self) -> Population<f64> {
+        let mut total:f64 = 0.;
+
+        let mut smaller = 0.;
+
+        for x in self.individuals.iter(){
+            if x.fitness < smaller {
+                smaller = x.fitness;
+            }
+        }
+
+        for x in self.individuals.iter(){
+            total += x.fitness - smaller;
+            // println!("{}", total);
+        }
+
+        total /= self.individuals.len() as f64;
+        // println!("{}", total);
+
+        let mut new_pop = Population::<f64>::new(self.size, self.n_gens, self.lb, self.ub);
+
+        new_pop.init();
+
+        for i in 0..self.size{
+            let mut sum:f64 = 0.;
+            let p = rand::thread_rng().gen_range::<f64>(0., total);
+            let mut counter = 0;
+            loop {
+
+                sum += (self.individuals[counter].fitness - smaller) / self.individuals.len() as f64;
+
+                if sum > p {
+                    // println!("break at {} {} {} {}", counter, total, sum, p);
+                    break;
+                }
+
+                counter += 1;
+            }
+
+            new_pop.individuals[i as usize].gene    = self.individuals[counter as usize].gene.clone();
+            // new_pop.individuals[i as usize].fitness = self.individuals[counter as usize].fitness;
+            new_pop.individuals[i as usize].update_fitness();
+
+            // println!("{} = {}", i, new_pop.individuals[i as usize].fitness);
+        }
+
+        // println!("newer pop size: {}", new_pop.individuals.len());
+        return new_pop;
+    }
+
     fn mutate_everyone(&mut self){
         for ref mut x in &mut self.individuals {
             x.mutate();
@@ -103,8 +154,6 @@ impl Population<f64> {
             count += 1;
         }
 
-        println!("new pop initial size: {}", new_pop.individuals.len());
-
         for _ in 0..(self.individuals.len()/2) as i32 {
             if rand::thread_rng().gen::<f64>() < self.crossover_chance {
                 let mut a:i32 = 0;
@@ -114,7 +163,7 @@ impl Population<f64> {
                     a = rand::thread_rng().gen_range::<i32>(0, self.individuals.len() as i32);
                     b = rand::thread_rng().gen_range::<i32>(0, self.individuals.len() as i32);
 
-                    a != b
+                    a == b
                 } {}
 
                 let split_pos = rand::thread_rng().gen_range(1, self.n_gens);
@@ -125,18 +174,21 @@ impl Population<f64> {
                 let mut new_a = self.individuals[a as usize].clone();
                 let mut new_b = self.individuals[a as usize].clone();
 
+
                 new_a.gene = a_1.to_vec();
                 new_b.gene = b_1.to_vec();
 
                 new_a.gene.extend_from_slice(b_2);
                 new_b.gene.extend_from_slice(a_2);
 
+                new_a.update_fitness();
+                new_b.update_fitness();
+
                 new_pop.individuals.push(new_a);
                 new_pop.individuals.push(new_b);
             }
         }
 
-        println!("new pop size: {}", new_pop.individuals.len());
         return new_pop;
     }
 
@@ -212,11 +264,16 @@ impl Individual<f64> {
 
     fn fitness(&self) -> f64 {
         let f = self.objective_function();
-        if f < 0.0001 {
-            return 100000.;
-        } else {
-            return 1.0/f;
-        }
+        return -f;
+        // if f < 0.0001 {
+        //     return 100000.;
+        // } else {
+        //     return 1.0/f;
+        // }
+    }
+
+    fn update_fitness(&mut self){
+        self.fitness = self.fitness();
     }
 
     fn print(&self) {
@@ -283,23 +340,30 @@ impl<T> Individual<T> {
 }
 
 fn main () {
-    let n_dim = 6;
+    let n_dim = 10;
     let pop_size = 20;
-    let max_iter = 1000;
+    let max_iter = 100001;
 
     let mut pop:Population<f64> = Population::<f64>::new(pop_size, n_dim, -5.12, 5.12);
 
     pop.init();
-    pop.set_mutation_chance(0.1);
+    // pop.set_mutation_chance(0.1);
 
-    //pop.print_pop_fit();
-
-    for _ in 0..max_iter{
+    for i in 0..max_iter{
         let best = pop.get_best(); // Save for elitmis
-        pop.print_best_fit();
         pop.mutate_everyone();
-        pop.crossover_everyone();
+
+        let new_pop = pop.crossover_everyone().roulette();
+
+        pop = new_pop;
 
         pop.individuals[0] = best; // Puts the best one back
+
+        if i % 1000 == 0 {
+            print!("{} ", i);
+            pop.print_best_fit();
+            // new_pop.print_best_fit();
+            // println!();
+        }
     }
 }
