@@ -2,11 +2,27 @@ extern crate rand;
 use rand::Rng;
 use rand::distributions::{IndependentSample, Range};
 use std::f64::consts::PI;
-// use std::cmp::min;
+use std::f64::consts::E;
 
 #[allow(dead_code)]
 fn rastrigin(pos: &[f64]) -> f64 {
     return pos.iter().fold(0.0, |sum, x| sum + x * x - 10.0 * (2.0 * PI * x).cos() + 10.0);
+}
+
+#[allow(dead_code)]
+fn ackely(x: &[f64]) -> f64 {
+    let p = x.len() as f64;
+    return 20_f64 + E - 20_f64 * (-0.2_f64 * (p.recip() * (x.iter().fold(0_f64, |sum, x| { sum + x.powi(2) })).sqrt())).exp() - (p.recip() * x.iter().fold(0_f64, |sum, x| { sum + (2_f64 * PI * x).cos() })).exp();
+}
+
+#[allow(dead_code)]
+fn rosenbrock(x: &[f64]) -> f64 {
+    return x.iter().skip(1).zip(x).fold(0_f64, |sum, (x_next, x)| { sum + 100_f64 * (x_next - x.powi(2)).powi(2) + (x - 1_f64).powi(2) });
+}
+
+#[allow(dead_code)]
+fn sphere(x: &[f64]) -> f64 {
+    return x.iter().fold(0_f64, |sum, x| sum + x.powi(2));
 }
 
 #[derive(Clone)]
@@ -259,7 +275,10 @@ impl Individual<f64> {
     }
 
     fn objective_function(&self) -> f64 {
-        return rastrigin(self.gene.as_slice());
+        // return rastrigin(self.gene.as_slice());
+        // return ackely(self.gene.as_slice());
+        // return sphere(self.gene.as_slice());
+        return rosenbrock(self.gene.as_slice());
     }
 
     fn fitness(&self) -> f64 {
@@ -341,8 +360,8 @@ impl<T> Individual<T> {
 
 fn main () {
     let n_dim = 10;
-    let pop_size = 20;
-    let max_iter = 100001;
+    let pop_size = 50;
+    let max_iter = 200001;
 
     let mut pop:Population<f64> = Population::<f64>::new(pop_size, n_dim, -5.12, 5.12);
 
