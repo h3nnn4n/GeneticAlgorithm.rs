@@ -25,6 +25,12 @@ fn sphere(x: &[f64]) -> f64 {
     return x.iter().fold(0_f64, |sum, x| sum + x.powi(2));
 }
 
+
+#[allow(dead_code)]
+fn parps(x: &f64) -> f64 {
+    return (x * 20.).cos() - x.abs()/2. + (x*x*x)/4.;
+}
+
 #[allow(dead_code)]
 fn alternating_bits(x: &[bool]) -> f64 {
     let mut total = 0.;
@@ -724,13 +730,26 @@ impl Individual<bool> {
     }
 
     fn objective_function(&self) -> f64 {
-        return alternating_bits(self.gene.as_slice());
+        //return alternating_bits(self.gene.as_slice());
+        let mut n: f64 = 0.;
+
+        for c in 0..self.gene.len() {
+            if self.gene[c] {
+                n += (2.0 as f64).powi(c as i32);
+            }
+        }
+
+        n = 2. - ((2.- -2.)/((2. as f64).powi(16) - 1.)) * n;
+
+        return parps(&n);
         //return 0.;
     }
 
     fn fitness(&self) -> f64 {
         let f = self.objective_function();
+
         return f;
+        //return -f + 2.;
     }
 
     fn update_fitness(&mut self){
@@ -764,9 +783,9 @@ impl Individual<bool> {
 }
 
 fn main () {
-    let n_dim    = 50;
+    let n_dim    = 16;
     let pop_size = 50;
-    let max_iter = 10_000;
+    let max_iter = 1_000;
 
     //let mut pop:Population<f64> = Population::<f64>::new(pop_size, n_dim, -5.12, 5.12);
     //let mut pop:Population<i32> = Population::<i32>::new(pop_size, n_dim, 0, 10);
@@ -775,10 +794,10 @@ fn main () {
     pop.init();
     // pop.set_mutation_chance(0.1);
 
-    for x in pop.individuals.iter() {
-        x.print();
-        println!();
-    }
+    //for x in pop.individuals.iter() {
+        //x.print();
+        //println!();
+    //}
 
    //return;
     for i in 0..max_iter{
@@ -801,5 +820,17 @@ fn main () {
 
     print!("{:8} ", max_iter);
     pop.print_best_fit();
+
+    let mut n: f64 = 0.;
+
+    for c in 0..(pop.get_best().gene.len()) {
+        if pop.get_best().gene[c] {
+            n += (2.0 as f64).powi(c as i32);
+        }
+    }
+
+    n = 2. - ((2.- -2.)/((2. as f64).powi(16) - 1.)) * n;
+
+    println!("{}", n);
 }
 
